@@ -7,21 +7,22 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-import com.apusic.distribute.kafka.common.KafkaConf;
 import com.apusic.distribute.message.model.MessageEvent;
 import com.apusic.distribute.message.publisher.MessageEventPublisher;
 
 /**
- * Kafka 消息生产并发送
+ * Kafka 发送消息事件实体(含消息事件类型，消息，发送时间)
  * 
  * @author zt
  *
  */
 public class KafkaMessageEventPublisher<T extends Serializable> implements MessageEventPublisher<T> {
-
+	// 生产者
 	private Producer<Long, MessageEvent<T>> producer;
+	private String bootstrapServers;
 
-	public KafkaMessageEventPublisher() {
+	public KafkaMessageEventPublisher(String bootstrapServers) {
+		this.bootstrapServers = bootstrapServers;
 		producer = getKafkaProducer();
 	}
 
@@ -33,7 +34,7 @@ public class KafkaMessageEventPublisher<T extends Serializable> implements Messa
 	private Producer<Long, MessageEvent<T>> getKafkaProducer() {
 		Properties props = new Properties();
 
-		props.put("bootstrap.servers", KafkaConf.BOOTSTRAP_SERVERS);
+		props.put("bootstrap.servers", bootstrapServers);
 		props.put("acks", "all");
 		props.put("retries", 0);
 		props.put("batch.size", 16384);
@@ -46,7 +47,16 @@ public class KafkaMessageEventPublisher<T extends Serializable> implements Messa
 	}
 
 	@Override
-	public void submitMessageEvent(MessageEvent<T> messageEvent) {
+	public void publish(MessageEvent<T> messageEvent) {
+		/*
+		 * ProducerRecord(String topic, K key, V value)
+		 * 
+		 * topic : eventType
+		 * 
+		 * key : sentTime
+		 * 
+		 * value : MessageEvent<T>
+		 */
 		producer.send(new ProducerRecord<Long, MessageEvent<T>>(messageEvent.getEventType(),
 				messageEvent.getTime().getTime(), messageEvent));
 

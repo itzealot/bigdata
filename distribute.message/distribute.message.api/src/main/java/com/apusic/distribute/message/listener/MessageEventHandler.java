@@ -5,20 +5,20 @@ import com.apusic.distribute.message.model.MessageEvent;
 import java.io.Serializable;
 
 /**
- * 事件接收接口
+ * 消息处理器
  * 
  * @author zt
  *
  * @param <T>
  */
-public interface MessageEventListener<T extends Serializable> {
+public interface MessageEventHandler<T extends Serializable> {
 
 	/**
-	 * 接收消息
+	 * 处理消息事件实体 MessageEvent
 	 * 
-	 * @param eventMessage
+	 * @param event
 	 *            消息
 	 */
-	void handler(MessageEvent<T> eventMessage);
+	void handler(MessageEvent<T> event);
 
 }

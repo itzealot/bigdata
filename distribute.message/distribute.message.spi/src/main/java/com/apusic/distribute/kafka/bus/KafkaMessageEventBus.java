@@ -12,23 +12,24 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.apusic.distribute.kafka.common.KafkaConf;
-import com.apusic.distribute.message.bus.MessageEventBus;
-import com.apusic.distribute.message.listener.MessageEventListener;
+import com.apusic.distribute.message.bus.MessageEventConsumer;
+import com.apusic.distribute.message.listener.MessageEventHandler;
 import com.apusic.distribute.message.model.MessageEvent;
 
 /**
- * Kafka 事件处理实现类
+ * Kafka 事件处理中心实现类
  * 
  * @author zt
  *
  */
-public class KafkaMessageEventBus implements MessageEventBus {
+public class KafkaMessageEventBus implements MessageEventConsumer {
+	private final static Logger LOG = LoggerFactory.getLogger(KafkaMessageEventBus.class);
 
-	private final static Logger log = LoggerFactory.getLogger(KafkaMessageEventBus.class);
+	private String bootstrapServers;
 
-	public KafkaMessageEventBus() {
-		log.info("create KafkaMessageEventBus.");
+	public KafkaMessageEventBus(String bootstrapServers) {
+		this.bootstrapServers = bootstrapServers;
+		LOG.info("create KafkaMessageEventBus.");
 	}
 
 	/**
@@ -40,7 +41,7 @@ public class KafkaMessageEventBus implements MessageEventBus {
 	private <T extends Serializable> Consumer<Long, MessageEvent<T>> getKafkaConsumer(String groupId) {
 		Properties props = new Properties();
 
-		props.put("bootstrap.servers", KafkaConf.BOOTSTRAP_SERVERS);
+		props.put("bootstrap.servers", bootstrapServers);
 		props.put("group.id", groupId);
 		props.put("enable.auto.commit", "true");
 		props.put("auto.commit.interval.ms", "1000");
@@ -53,24 +54,24 @@ public class KafkaMessageEventBus implements MessageEventBus {
 	}
 
 	@Override
-	public <T extends Serializable> void addMessageEventListener(String groupId, List<String> eventTypes,
-			MessageEventListener<T> eventListener) {
+	public <T extends Serializable> void consumer(String groupId, List<String> eventTypes,
+			MessageEventHandler<T> handler) {
 		Consumer<Long, MessageEvent<T>> consumer = getKafkaConsumer(groupId);
 
-		// 根据消息类型订阅消息
+		// 根据消息类型订阅消息(消息类型充当 kafka 的topic)
 		consumer.subscribe(eventTypes);
 
 		while (true) {
 			ConsumerRecords<Long, MessageEvent<T>> records = consumer.poll(100);
 			for (ConsumerRecord<Long, MessageEvent<T>> record : records) {
-				eventListener.handler(record.value());
+				// 调用消息处理接口处理消息
+				handler.handler(record.value());
 			}
 		}
 	}
 
 	@Override
-	public <T extends Serializable> void addMessageEventListener(String groupId, String eventType,
-			MessageEventListener<T> eventListener) {
-		this.addMessageEventListener(groupId, Arrays.asList(eventType), eventListener);
+	public <T extends Serializable> void consumer(String groupId, String eventType, MessageEventHandler<T> handler) {
+		this.consumer(groupId, Arrays.asList(eventType), handler);
 	}
 }

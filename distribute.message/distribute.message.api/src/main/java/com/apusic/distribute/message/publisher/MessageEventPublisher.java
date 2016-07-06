@@ -5,7 +5,7 @@ import com.apusic.distribute.message.model.MessageEvent;
 import java.io.Serializable;
 
 /**
- * 发送事件接口
+ * 发送消息事件实体(含消息事件类型，消息，发送时间) 接口
  * 
  * @author zt
  *
@@ -14,11 +14,17 @@ import java.io.Serializable;
 public interface MessageEventPublisher<T extends Serializable> {
 
 	/**
-	 * 发送事件
+	 * 接收并发送消息事件实体(含消息事件类型，消息，发送时间)
+	 * 
+	 * topic : eventType
+	 * 
+	 * key : sentTime
+	 * 
+	 * value : MessageEvent<T>
 	 * 
 	 * @param event
-	 *            要发送的事件
+	 *            要发送的消息
 	 */
-	void submitMessageEvent(MessageEvent<T> event);
+	void publish(MessageEvent<T> event);
 
 }

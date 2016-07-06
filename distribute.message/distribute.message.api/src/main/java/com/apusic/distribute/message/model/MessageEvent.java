@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 消息事件，包含事件类型，消息，日期
+ * 用于 kafka 传输消息事件实体，包含事件类型，消息主体，日期
  * 
  * @author zt
  *
@@ -15,10 +15,8 @@ public class MessageEvent<T extends Serializable> implements Serializable {
 
 	// 事件类型
 	private String eventType;
-
-	// 消息
+	// 消息主体
 	private T message;
-
 	// 日期
 	private Date time;
 
