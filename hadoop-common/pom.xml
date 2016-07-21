@@ -22,28 +22,23 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- The hadoop dependency start -->
+		<!-- hadoop dependency start -->
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-hdfs</artifactId>
+			<version>2.6.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-client</artifactId>
+			<version>2.6.0</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-common</artifactId>
-			<version>2.5.0-cdh5.3.0</version>
-
-			<!-- To solve Problems: Missing artifact jdk.tools:jdk.tools:jar:1.6. -->
-			<exclusions>
-				<exclusion>
-					<groupId>jdk.tools</groupId>
-					<artifactId>jdk.tools</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>2.6.0</version>
 		</dependency>
-		<dependency>
-			<groupId>jdk.tools</groupId>
-			<artifactId>jdk.tools</artifactId>
-			<version>1.6</version>
-			<scope>system</scope>
-			<systemPath>${JAVA_HOME}/lib/tools.jar</systemPath>
-		</dependency>
-		<!-- The hadoop dependency end -->
+		<!-- hadoop dependency end -->
 
 		<dependency>
 			<groupId>ch.ethz.ganymed</groupId>
@@ -51,10 +46,20 @@
 			<version>262</version>
 		</dependency>
 
+		<!-- hbase dependency start -->
 		<dependency>
 			<groupId>org.apache.hbase</groupId>
 			<artifactId>hbase-client</artifactId>
-			<version>0.98.6-cdh5.3.0</version>
+			<version>1.1.2</version>
 		</dependency>
+		<dependency>
+			<groupId>jdk.tools</groupId>
+			<artifactId>jdk.tools</artifactId>
+			<version>1.7</version>
+			<scope>system</scope>
+			<systemPath>${JAVA_HOME}/lib/tools.jar</systemPath>
+		</dependency>
+		<!-- hbase dependency end -->
+
 	</dependencies>
 </project>
