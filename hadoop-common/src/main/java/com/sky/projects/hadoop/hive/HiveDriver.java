@@ -11,14 +11,17 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static com.sky.projects.hadoop.common.Closeables.close;
 
-public class HiveDriver {
+public final class HiveDriver {
 	private static final Logger LOG = LoggerFactory.getLogger(HiveDriver.class);
-	private static final String MERGE_SIZE = "1024000000";
-	private static final String MERGE_SMALLFILES_SIZE = "256000000";
-	private static final String HIVE_DRIVER = "org.apache.hive.jdbc.HiveDriver";
 
-	public static Connection getConnection(String url) {
+	public static final String MERGE_SIZE = "1024000000";
+	public static final String MERGE_SMALLFILES_SIZE = "256000000";
+	public static final String HIVE_DRIVER = "org.apache.hive.jdbc.HiveDriver";
+	public static final String MYSQL_DRIVER = "com.mysql.Driver";
+
+	public static Connection getHiveConnection(String url) {
 		try {
 			Class.forName(HIVE_DRIVER);
 			return DriverManager.getConnection(url);
@@ -29,17 +32,15 @@ public class HiveDriver {
 		return null;
 	}
 
-	public static void close(AutoCloseable... closeables) {
-		if (closeables != null) {
-			for (AutoCloseable closeable : closeables)
-				try {
-					closeable.close();
-				} catch (Exception e) {
-					LOG.error("close connection failed!", e);
-				} finally {
-					closeable = null;
-				}
+	public static Connection getMysqlConnection(String url, String username, String password) {
+		try {
+			Class.forName(MYSQL_DRIVER);
+			return DriverManager.getConnection(url, username, password);
+		} catch (Exception e) {
+			LOG.error("get mysql connection failed. url={}, username={}, password={}, {}", url, username, password, e);
 		}
+
+		return null;
 	}
 
 	/**
@@ -56,7 +57,7 @@ public class HiveDriver {
 		boolean result = false;
 
 		try {
-			conn = getConnection(url);
+			conn = getHiveConnection(url);
 			stmt = conn.createStatement();
 			result = stmt.execute(sql);
 		} catch (Exception e) {
@@ -93,7 +94,7 @@ public class HiveDriver {
 		Statement stmt = null;
 
 		try {
-			conn = getConnection(url);
+			conn = getHiveConnection(url);
 			stmt = conn.createStatement();
 			result = stmt.execute(sql);
 		} catch (Exception e) {
@@ -112,7 +113,7 @@ public class HiveDriver {
 		String sql = "drop table " + table;
 
 		try {
-			conn = getConnection(url);
+			conn = getHiveConnection(url);
 			stmt = conn.createStatement();
 			result = stmt.execute(sql);
 		} catch (Exception e) {
@@ -139,7 +140,7 @@ public class HiveDriver {
 		boolean result = false;
 
 		try {
-			conn = HiveDriver.getConnection(hiveUrl);
+			conn = HiveDriver.getHiveConnection(hiveUrl);
 			stmt = conn.createStatement();
 			// stmt.execute("set hive.merge.size.per.task = 256*1000*1000");
 			// stmt.execute("set hive.exec.dynamic.partition.mode=nonstrict");
@@ -161,7 +162,7 @@ public class HiveDriver {
 		Statement stmt = null;
 
 		try {
-			conn = HiveDriver.getConnection(hiveUrl);
+			conn = HiveDriver.getHiveConnection(hiveUrl);
 			stmt = conn.createStatement();
 			stmt.execute("set hive.exec.dynamic.partition.mode=nonstrict");
 			stmt.execute(sql);
@@ -186,7 +187,7 @@ public class HiveDriver {
 		boolean result = false;
 
 		try {
-			conn = HiveDriver.getConnection(hiveUrl);
+			conn = HiveDriver.getHiveConnection(hiveUrl);
 			stmt = conn.createStatement();
 			stmt.execute("set hive.exec.dynamic.partition.mode=nonstrict");
 			result = stmt.execute(sql);
@@ -206,7 +207,7 @@ public class HiveDriver {
 		Statement stmt = null;
 
 		try {
-			conn = getConnection(url);
+			conn = getHiveConnection(url);
 			stmt = conn.createStatement();
 			result = stmt.execute(sql);
 		} catch (Exception e) {
@@ -224,7 +225,7 @@ public class HiveDriver {
 		String sql = "alter table " + table + " drop partition(" + partition + "=?)";
 
 		try {
-			conn = getConnection(url);
+			conn = getHiveConnection(url);
 			stmt = conn.prepareStatement(sql);
 
 			int len = partitionValues.size();
@@ -259,7 +260,7 @@ public class HiveDriver {
 		Statement stmt = null;
 
 		try {
-			conn = HiveDriver.getConnection(hiveUrl);
+			conn = HiveDriver.getHiveConnection(hiveUrl);
 			stmt = conn.createStatement();
 			/*
 			 * hive合并文件推荐配置：hive.merge.smallfiles.avgsize=16000000
@@ -302,7 +303,7 @@ public class HiveDriver {
 		String partitionColName = null;
 
 		try {
-			conn = HiveDriver.getConnection(hiveUrl);
+			conn = HiveDriver.getHiveConnection(hiveUrl);
 			stmt = conn.createStatement();
 			rs = stmt.executeQuery(sql);
 

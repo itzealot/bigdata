@@ -1,5 +1,10 @@
 package com.sky.projects.hadoop.common;
 
+/**
+ * AutoCloseable Util
+ * 
+ * @author zealot
+ */
 public final class Closeables {
 
 	public static void close(AutoCloseable... closeables) {
@@ -8,8 +13,6 @@ public final class Closeables {
 				try {
 					closeable.close();
 				} catch (Exception e) {
-					// TODO
-					e.printStackTrace();
 				} finally {
 					closeable = null;
 				}

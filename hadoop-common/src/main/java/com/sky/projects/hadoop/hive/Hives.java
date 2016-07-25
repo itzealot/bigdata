@@ -1,12 +1,15 @@
 package com.sky.projects.hadoop.hive;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
+import static com.sky.projects.hadoop.common.Closeables.close;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sky.projects.hadoop.common.SqlBuilder;
 
@@ -18,68 +21,53 @@ import com.sky.projects.hadoop.common.SqlBuilder;
  * @author zt
  */
 public final class Hives {
-	public static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
-	private static final Logger LOG = Logger.getLogger(Hives.class);
+	private static final Logger LOG = LoggerFactory.getLogger(Hives.class);
+	public static final String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
 
 	public static long count(Statement stmt, String tableName) {
-		String sql = SqlBuilder.count(tableName);
-		long value = 0L;
 		ResultSet res = null;
 
 		try {
-			res = stmt.executeQuery(sql);
+			res = stmt.executeQuery(SqlBuilder.count(tableName));
 
-			if (res.next()) {
-				value = Long.parseLong(res.getString(1));
-			}
+			return res.next() ? Long.parseLong(res.getString(1)) : 0L;
 		} catch (Exception e) {
-			LOG.error("execute sql=" + sql + " count exception", e);
+			LOG.error("count table={} error, {}", tableName, e);
+			return 0L;
 		} finally {
 			close(res);
 		}
-
-		return value;
 	}
 
-	public static ResultSet query(Statement stmt, String tableName) throws SQLException {
-		String sql = "SELECT * FROM " + tableName;
-
-		return stmt.executeQuery(sql);
-	}
-
-	public static void loadData(Statement stmt, String tableName, String filePath) {
-		String sql = "load data local inpath '" + filePath + "' into table " + tableName;
-
+	public static boolean loadData(Statement stmt, String localPath, String tableName) {
 		try {
-			stmt.executeUpdate(sql);
+			return stmt.executeUpdate("load data local inpath '" + localPath + "' into table " + tableName) != 0;
 		} catch (SQLException e) {
-			// TODO
-			e.printStackTrace();
+			LOG.error("load data from local into table error, localPath={}, tableName={}", localPath, tableName, e);
+			return false;
 		}
-
 	}
 
-	public static String desc(Statement stmt, String tableName) {
-		String sql = "describe " + tableName;
-		StringBuffer buffer = new StringBuffer();
+	public static List<TableDesc> desc(Statement stmt, String tableName) {
+		return describe(stmt, tableName);
+	}
+
+	public static List<TableDesc> describe(Statement stmt, String tableName) {
+		List<TableDesc> results = new ArrayList<>();
 		ResultSet res = null;
 
 		try {
-			res = stmt.executeQuery(sql);
-
+			res = stmt.executeQuery("describe " + tableName);
 			while (res.next()) {
-				buffer.append(res.getString(1));
-				buffer.append("\t");
-				buffer.append(res.getString(2));
+				results.add(new TableDesc(res.getString(1), res.getString(2)));
 			}
 		} catch (SQLException e) {
-			// TODO
-			e.printStackTrace();
+			LOG.error("describe table error where table={}, {}", tableName, e);
 		} finally {
 			close(res);
 		}
 
-		return buffer.toString();
+		return results;
 	}
 
 	public static String show(Statement stmt, String tableName) {
@@ -94,7 +82,7 @@ public final class Hives {
 				buffer.append(res.getString(1));
 			}
 		} catch (SQLException e) {
-			LOG.error("show tables error, sql is " + sql, e);
+			LOG.error("show tables error, table={}, {}", tableName, e);
 		} finally {
 			close(res);
 		}
@@ -102,65 +90,29 @@ public final class Hives {
 		return buffer.toString();
 	}
 
-	public static boolean createTable(Statement stmt, String tableName) {
-		String sql = "create table " + tableName
-				+ " (key int, value string)  row format delimited fields terminated by '\t'";
-
-		int value = 0;
-
+	/**
+	 * create table sql like: create table tableName (key int, value string) row
+	 * format delimited fields terminated by '\t'
+	 * 
+	 * @param stmt
+	 * @param createTableSql
+	 * @return
+	 */
+	public static boolean createTable(Statement stmt, String createTableSql) {
 		try {
-			value = stmt.executeUpdate(sql);
+			return stmt.executeUpdate(createTableSql) != 0;
 		} catch (SQLException e) {
-			// TODO
-			e.printStackTrace();
+			LOG.error("create table error, create table sql={}, {}", createTableSql, e);
+			return false;
 		}
-
-		return value != 0;
 	}
 
 	public static boolean dropTable(Statement stmt, String tableName) {
-		String sql = "drop table " + tableName;
-
-		int value = 0;
 		try {
-			value = stmt.executeUpdate(sql);
+			return stmt.executeUpdate("drop table " + tableName) != 0;
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error("drop table error, table={}, {}", tableName, e);
+			return false;
 		}
-
-		return value != 0;
-	}
-
-	public static Connection getConn(String url, String user, String password) {
-		Connection conn = null;
-
-		try {
-			Class.forName(driverName);
-			conn = DriverManager.getConnection(url, user, password);
-		} catch (Exception e) {
-			LOG.error("get driver error where url is " + url + ", user is " + user + ", password is " + password, e);
-			throw new IllegalArgumentException("hive get connection exception in Hives.getConn", e);
-		}
-
-		return conn;
-	}
-
-	public static void close(AutoCloseable... clos) {
-		if (clos == null) {
-			return;
-		}
-
-		for (AutoCloseable clo : clos) {
-			if (clo != null) {
-				try {
-					clo.close();
-					clo = null;
-				} catch (Exception e) {
-					LOG.error("close connection failed!", e);
-				}
-			}
-		}
-
 	}
 }
