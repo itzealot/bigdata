@@ -1,7 +1,9 @@
 package com.sky.projects.kafka.producer;
 
 import com.sky.projects.kafka.common.ProducerConfigBuilder;
+import com.sky.projects.kafka.thread.Threads;
 
+import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 
 /**
@@ -12,34 +14,22 @@ import kafka.producer.KeyedMessage;
  */
 public class KafkaProducer implements Runnable {
 	// kafka producer
-	private final kafka.javaapi.producer.Producer<Integer, String> producer;
-
+	private final Producer<Integer, String> producer;
+	private int messageNo = 1;;
 	private final String topic;
 
-	public KafkaProducer(String topic) {
-		producer = new kafka.javaapi.producer.Producer<Integer, String>(ProducerConfigBuilder.createConsumerConfig());
-
+	public KafkaProducer(String topic, String brokers) {
 		this.topic = topic;
+		producer = new Producer<Integer, String>(ProducerConfigBuilder.createProducerConfig(brokers));
 	}
 
+	@Override
 	public void run() {
-		int messageNo = 1;
-
 		while (true) {
-			String messageStr = new String("Message_" + messageNo);
-
+			String messageStr = new String("Message_" + messageNo++);
 			System.out.println("Send:" + messageStr);
-
 			producer.send(new KeyedMessage<Integer, String>(topic, messageStr));
-
-			messageNo++;
-
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e) {
-				// TODO
-				e.printStackTrace();
-			}
+			Threads.sleep(2000);
 		}
 	}
 }

@@ -11,7 +11,14 @@ import kafka.producer.ProducerConfig;
  *
  */
 public final class ProducerConfigBuilder {
-	private ProducerConfigBuilder() {
+
+	/**
+	 * 创建 ProducerConfig 对象
+	 * 
+	 * @return
+	 */
+	public static ProducerConfig createProducerConfig() {
+		return createProducerConfig(KafkaConfig.DEFAULT_METADAT_BROKER_LIST);
 	}
 
 	/**
@@ -19,12 +26,15 @@ public final class ProducerConfigBuilder {
 	 * 
 	 * @return
 	 */
-	public static ProducerConfig createConsumerConfig() {
+	public static ProducerConfig createProducerConfig(String brokers) {
 		Properties props = new Properties();
 
-		props.put("serializer.class", "kafka.serializer.StringEncoder");
-		props.put("metadata.broker.list", KafkaConfig.METADAT_BROKER_LIST);
+		props.put(KafkaConfig.METADAT_BROKER_LIST_PROPERTY, brokers);
+		props.put(KafkaConfig.SERIALIZER_CLASS_PROPERTY, KafkaConfig.DEFAULT_SERIALIZER_CLASS);
 
 		return new ProducerConfig(props);
+	}
+
+	private ProducerConfigBuilder() {
 	}
 }
