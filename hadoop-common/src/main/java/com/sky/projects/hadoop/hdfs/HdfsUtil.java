@@ -24,9 +24,9 @@ import org.apache.hadoop.util.Progressable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HDFSs {
+public class HdfsUtil {
 
-	private static final Logger LOG = LoggerFactory.getLogger(HDFSs.class);
+	private static final Logger LOG = LoggerFactory.getLogger(HdfsUtil.class);
 
 	public static final int BUFFER_SIZE = 1024;
 
@@ -34,7 +34,7 @@ public class HDFSs {
 
 	public static Configuration getConfig(String hdfsName) {
 		Configuration conf = new Configuration();
-		
+
 		conf.set("fs.default.name", hdfsName);
 
 		return conf;
@@ -255,6 +255,16 @@ public class HDFSs {
 		}
 
 		return false;
+	}
+
+	public static void read(Path path) throws IOException {
+		FileSystem hdfs = FileSystem.get(HdfsUtil.getConfig());
+
+		FSDataInputStream fsDataInputStream = hdfs.open(path);
+
+		IOUtils.copyBytes(fsDataInputStream, System.out, 4096, false);
+
+		hdfs.close();
 	}
 
 	/**
