@@ -11,11 +11,9 @@ import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HConnectionManager;
 import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
@@ -43,13 +41,11 @@ public final class Hbases {
 
 	private static final String zkUrl = "rzx162:2181,rzx164:2181,rzx166:218";
 	private static Configuration conf = HBaseConfigBuilder.createConfiguration(zkUrl);
-	private static HBaseAdmin admin = HBaseConfigBuilder.create(conf);
-	public static HTableInterface table = null;
-	private static HConnection connection = null;
 
 	static {
 		try {
-			connection = HConnectionManager.createConnection(conf);
+			HConnection connection = HConnectionManager.createConnection(conf);
+			connection.close();
 		} catch (IOException e) {
 			LOG.error("create Hbase Connection error.", e);
 		}

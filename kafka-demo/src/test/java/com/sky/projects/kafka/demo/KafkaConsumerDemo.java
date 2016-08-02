@@ -12,14 +12,14 @@ import kafka.javaapi.consumer.ConsumerConnector;
 
 public class KafkaConsumerDemo {
 
-	private static final String ZK_URL = "rzx162:2181,rzx164:2181,rzx166:2181/kafka";
-	private static final String TOPIC = "topic-zt";
+	private static final String ZK_URL = "zt92:2181";
+	private static final String TOPIC = "test";
 
 	public static void main(String[] args) {
 		ConsumerConnector connector = Consumer.createJavaConsumerConnector(create());
 
 		Map<String, Integer> topicsMap = new HashMap<String, Integer>();
-		topicsMap.put(TOPIC, 3);
+		topicsMap.put(TOPIC, 1);
 		List<KafkaStream<byte[], byte[]>> partitions = connector.createMessageStreams(topicsMap).get(TOPIC);
 
 		for (KafkaStream<byte[], byte[]> partition : partitions) {

@@ -24,10 +24,10 @@ public final class ConsumerConfigBuilder {
 
 		props.put(KafkaConfig.GROUP_ID_PROPERTY, groupId);
 		props.put(KafkaConfig.ZK_CONNECT_PROPERTY, zkUrl);
-		props.put(KafkaConfig.ZK_SESSION_TIMEOUT_MS_PROPERTY, "400000");
-		props.put(KafkaConfig.ZK_SYNC_TIME_MS_PROPERTY, "200");
-		props.put("auto.offset.reset", "largest");
-		props.put(KafkaConfig.AUTO_COMMIT_INTERVAL_MS_PROPERTY, "1000");
+		props.put(KafkaConfig.ZK_SESSION_TIMEOUT_MS_PROPERTY, KafkaConfig.DEFAULT_ZK_SESSION_TIMEOUT_MS);
+		props.put(KafkaConfig.ZK_SYNC_TIME_MS_PROPERTY, KafkaConfig.DEFAULT_ZK_SYNC_TIME_MS);
+		props.put(KafkaConfig.AUTO_OFFSET_RESET_PROPERTY, KafkaConfig.DEFAULT_OFFSET_RESET);
+		props.put(KafkaConfig.AUTO_COMMIT_INTERVAL_MS_PROPERTY, KafkaConfig.DEFAULT_AUTO_COMMIT_INTERVAL_MS);
 
 		return new ConsumerConfig(props);
 	}

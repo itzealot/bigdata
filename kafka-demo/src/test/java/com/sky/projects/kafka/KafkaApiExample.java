@@ -10,7 +10,7 @@ import java.util.Map;
 import kafka.api.FetchRequest;
 import kafka.api.FetchRequestBuilder;
 import kafka.api.PartitionOffsetRequestInfo;
-import kafka.cluster.BrokerEndPoint;
+import kafka.cluster.Broker;
 import kafka.common.ErrorMapping;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.FetchResponse;
@@ -236,9 +236,9 @@ public class KafkaApiExample {
 
 		if (metaData != null) {
 			brokers.clear();
-			List<BrokerEndPoint> endpoints = metaData.replicas();
+			List<Broker> endpoints = metaData.replicas();
 
-			for (BrokerEndPoint point : endpoints) {
+			for (Broker point : endpoints) {
 				brokers.add(point.host());
 			}
 		}

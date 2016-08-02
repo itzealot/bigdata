@@ -38,8 +38,6 @@ public class KafkaConsumer implements Runnable {
 		KafkaStream<byte[], byte[]> stream = consumerMap.get(topic).get(0);
 		ConsumerIterator<byte[], byte[]> it = stream.iterator();
 
-		System.out.println("has next : " + it.hasNext());
-
 		while (it.hasNext()) {
 			System.out.println("receive：" + new String(it.next().message()));
 			Threads.sleep(1000);
